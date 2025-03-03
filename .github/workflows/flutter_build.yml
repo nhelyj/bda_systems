@@ -15,12 +15,15 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-build: --no-analytics  # Отключаем аналитику
 
       - name: Build Windows
+        shell: bash  # Явно указываем bash для кросс-платформенных команд
         run: |
           flutter pub get
+          flutter pub upgrade  # Обновляем зависимости
           flutter build windows --release
-          mkdir finished_program/windows
+          mkdir -p finished_program/windows  # -p для игнорирования существования
           cp -r build/windows/runner/Release/* finished_program/windows/
 
       - name: Upload Windows Artifact
@@ -38,10 +41,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-build: --no-analytics
 
       - name: Build Linux
         run: |
           flutter pub get
+          flutter pub upgrade
           flutter build linux --release
           mkdir -p finished_program/linux
           cp -r build/linux/arm64/release/bundle/* finished_program/linux/
@@ -66,10 +71,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-build: --no-analytics
 
       - name: Build Web
         run: |
           flutter pub get
+          flutter pub upgrade
           flutter build web --release
           mkdir -p finished_program/web
           cp -r build/web/* finished_program/web/
@@ -88,3 +95,24 @@ jobs:
             finished_program/web/
             finished_program/android/
           retention-days: 5
+
+  commit-artifacts:
+    needs: [build-windows, build-linux, build-web-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Разрешение на запись в репозиторий
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: finished_program
+          path: finished_program
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add finished_program/
+          git commit -m "Update build artifacts [skip ci]"  # Пропускаем триггер CI
+          git push

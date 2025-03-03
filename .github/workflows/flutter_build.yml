@@ -1,181 +1,98 @@
-name: Flutter Build & Release
+name: Flutter Build All Platforms
 
 on:
   push:
-    branches:
-      - main  # Запускать при пуше в main
+    branches: [main]
 
 jobs:
-  build-android:
+  build_linux_android_web_windows:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
+          flutter-version: "3.29.0"  # Укажите актуальную версию Flutter
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: flutter pub get
 
+      # Сборка Android
       - name: Build Android APK
         run: flutter build apk --release
+      - name: Prepare Android artifacts
+        run: |
+          mkdir -p finished_program/android
+          cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
 
-      - name: Create Output Folder
-        run: mkdir -p finished_program/android
-
-      - name: Move APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk finished_program/android/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: finished_program/android/
-
-  build-ios:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build iOS
-        run: flutter build ios --no-codesign
-
-      - name: Create Output Folder
-        run: mkdir -p finished_program/ios
-
-      - name: Move iOS Build
-        run: mv build/ios/iphoneos finished_program/ios/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build
-          path: finished_program/ios/
-
-  build-web:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
+      # Сборка Web
       - name: Build Web
         run: flutter build web
+      - name: Prepare Web artifacts
+        run: |
+          mkdir -p finished_program/web
+          cp -r build/web/* finished_program/web/
 
-      - name: Create Output Folder
-        run: mkdir -p finished_program/web
-
-      - name: Move Web Build
-        run: mv build/web finished_program/web/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: finished_program/web/
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build Windows EXE
+      # Сборка Windows
+      - name: Build Windows
         run: flutter build windows
+      - name: Prepare Windows artifacts
+        run: |
+          mkdir -p finished_program/windows
+          cp -r build/windows/runner/Release/* finished_program/windows/
 
-      - name: Create Output Folder
-        run: mkdir -p finished_program/windows
-
-      - name: Move Windows Build
-        run: mv build/windows/runner/Release finished_program/windows/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-exe
-          path: finished_program/windows/
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build macOS App
-        run: flutter build macos
-
-      - name: Create Output Folder
-        run: mkdir -p finished_program/macos
-
-      - name: Move macOS Build
-        run: mv build/macos/Build/Products/Release finished_program/macos/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-app
-          path: finished_program/macos/
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
+      # Сборка Linux
       - name: Build Linux
         run: flutter build linux
+      - name: Prepare Linux artifacts
+        run: |
+          mkdir -p finished_program/linux
+          cp -r build/linux/release/bundle/* finished_program/linux/
 
-      - name: Create Output Folder
-        run: mkdir -p finished_program/linux
-
-      - name: Move Linux Build
-        run: mv build/linux/x64/release/bundle finished_program/linux/
-
-      - name: Upload Artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-app
-          path: finished_program/linux/
+          name: builds-${{ runner.os }}-${{ github.sha }}
+          path: finished_program/
+          retention-days: 1
+
+  build_macos_ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.29.0"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Сборка iOS
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+      - name: Prepare iOS artifacts
+        run: |
+          mkdir -p finished_program/ios
+          cp -r build/ios/Release-iphoneos/* finished_program/ios/
+
+      # Сборка macOS
+      - name: Build macOS
+        run: flutter build macos
+      - name: Prepare macOS artifacts
+        run: |
+          mkdir -p finished_program/macos
+          cp -r build/macos/Build/Products/Release/* finished_program/macos/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds-${{ runner.os }}-${{ github.sha }}
+          path: finished_program/
+          retention-days: 1

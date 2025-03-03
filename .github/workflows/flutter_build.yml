@@ -1,62 +1,22 @@
-name: Flutter Multi-OS Build
+name: Flutter Web/Android Build
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # build-windows:  # Закомментировано по запросу
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     # ... остальные шаги Windows ...
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-build: --no-analytics  # Отключаем аналитику
-
-      - name: Build Windows
-        shell: bash  # Явно указываем bash для кросс-платформенных команд
-        run: |
-          flutter pub get
-          flutter pub upgrade  # Обновляем зависимости
-          flutter build windows --release
-          mkdir -p finished_program/windows  # -p для игнорирования существования
-          cp -r build/windows/runner/Release/* finished_program/windows/
-
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: finished_program
-          path: finished_program/windows/
-          retention-days: 5
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-build: --no-analytics
-
-      - name: Build Linux
-        run: |
-          flutter pub get
-          flutter pub upgrade
-          flutter build linux --release
-          mkdir -p finished_program/linux
-          cp -r build/linux/arm64/release/bundle/* finished_program/linux/
-
-      - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: finished_program
-          path: finished_program/linux/
-          retention-days: 5
+  # build-linux:  # Закомментировано по запросу
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     # ... остальные шаги Linux ...
 
   build-web-android:
     runs-on: ubuntu-latest
@@ -76,7 +36,6 @@ jobs:
       - name: Build Web
         run: |
           flutter pub get
-          flutter pub upgrade
           flutter build web --release
           mkdir -p finished_program/web
           cp -r build/web/* finished_program/web/
@@ -97,13 +56,13 @@ jobs:
           retention-days: 5
 
   commit-artifacts:
-    needs: [build-windows, build-linux, build-web-android]
+    needs: [build-web-android]  # Только зависимость от актуального job
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Разрешение на запись в репозиторий
+      contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: finished_program
@@ -114,5 +73,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add finished_program/
-          git commit -m "Update build artifacts [skip ci]"  # Пропускаем триггер CI
+          git commit -m "Update web/android builds [skip ci]"
           git push

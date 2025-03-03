@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  build_linux_android_web_windows:
+  build_linux_android_web:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,12 +15,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.29.0"  # Укажите актуальную версию Flutter
+          flutter-version: "3.22.0"
 
       - name: Install dependencies
         run: flutter pub get
 
-      # Сборка Android
+      # Android
       - name: Build Android APK
         run: flutter build apk --release
       - name: Prepare Android artifacts
@@ -28,7 +28,7 @@ jobs:
           mkdir -p finished_program/android
           cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
 
-      # Сборка Web
+      # Web
       - name: Build Web
         run: flutter build web
       - name: Prepare Web artifacts
@@ -36,15 +36,7 @@ jobs:
           mkdir -p finished_program/web
           cp -r build/web/* finished_program/web/
 
-      # Сборка Windows
-      - name: Build Windows
-        run: flutter build windows
-      - name: Prepare Windows artifacts
-        run: |
-          mkdir -p finished_program/windows
-          cp -r build/windows/runner/Release/* finished_program/windows/
-
-      # Сборка Linux
+      # Linux
       - name: Build Linux
         run: flutter build linux
       - name: Prepare Linux artifacts
@@ -55,7 +47,37 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: builds-${{ runner.os }}-${{ github.sha }}
+          name: builds-ubuntu-${{ github.sha }}
+          path: finished_program/
+          retention-days: 1
+
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.22.0"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Windows
+      - name: Build Windows
+        run: flutter build windows
+      - name: Prepare Windows artifacts
+        run: |
+          mkdir -p finished_program/windows
+          cp -r build/windows/runner/Release/* finished_program/windows/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds-windows-${{ github.sha }}
           path: finished_program/
           retention-days: 1
 
@@ -69,12 +91,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.29.0"
+          flutter-version: "3.22.0"
 
       - name: Install dependencies
         run: flutter pub get
 
-      # Сборка iOS
+      # iOS
       - name: Build iOS
         run: flutter build ios --release --no-codesign
       - name: Prepare iOS artifacts
@@ -82,7 +104,7 @@ jobs:
           mkdir -p finished_program/ios
           cp -r build/ios/Release-iphoneos/* finished_program/ios/
 
-      # Сборка macOS
+      # macOS
       - name: Build macOS
         run: flutter build macos
       - name: Prepare macOS artifacts
@@ -93,6 +115,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: builds-${{ runner.os }}-${{ github.sha }}
+          name: builds-macos-${{ github.sha }}
           path: finished_program/
           retention-days: 1

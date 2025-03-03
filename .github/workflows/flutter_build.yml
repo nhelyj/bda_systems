@@ -1,124 +1,124 @@
 name: Flutter Build All Platforms
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build_android_web_linux:
-        name: Build Android, Web и Linux (Ubuntu)
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+  build_android_web_linux:
+    name: Build Android, Web и Linux (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Обновлено до v4
 
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                  channel: stable
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
-            - name: Accept Android licenses
-              run: flutter doctor --android-licenses
+      - name: Accept Android licenses
+        run: flutter doctor --android-licenses
 
-            - name: Install dependencies
-              run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-            # Android
-            - name: Build Android APK
-              run: flutter build apk --release
-            - name: Create Android directory
-              run: mkdir -p finished_program/android
-            - name: Copy Android APK
-              run: cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
+      # Android
+      - name: Build Android APK
+        run: flutter build apk --release
+      - name: Create Android directory
+        run: mkdir -p finished_program/android
+      - name: Copy Android APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
 
-            # Web
-            - name: Build Web
-              run: flutter build web
-            - name: Create Web directory
-              run: mkdir -p finished_program/web
-            - name: Copy Web build
-              run: cp -r build/web/* finished_program/web/
+      # Web
+      - name: Build Web
+        run: flutter build web
+      - name: Create Web directory
+        run: mkdir -p finished_program/web
+      - name: Copy Web build
+        run: cp -r build/web/* finished_program/web/
 
-            # Linux
-            - name: Build Linux
-              run: flutter build linux
-            - name: Create Linux directory
-              run: mkdir -p finished_program/linux
-            - name: Copy Linux build
-              run: cp -r build/linux/release/bundle/* finished_program/linux/
+      # Linux
+      - name: Build Linux
+        run: flutter build linux
+      - name: Create Linux directory
+        run: mkdir -p finished_program/linux
+      - name: Copy Linux build
+        run: cp -r build/linux/release/bundle/* finished_program/linux/
 
-            # Артефакты
-            - name: Upload artifacts (Ubuntu)
-              uses: actions/upload-artifact@v3
-              with:
-                  name: finished_program_ubuntu_${{ github.sha }}
-                  path: finished_program/
+      # Артефакты (обновлено до v4)
+      - name: Upload artifacts (Ubuntu)
+        uses: actions/upload-artifact@v4  # Исправлено здесь
+        with:
+          name: finished_program_ubuntu_${{ github.sha }}
+          path: finished_program/
 
-    build_windows:
-        name: Build Windows
-        runs-on: windows-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+  build_windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Обновлено до v4
 
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                  channel: stable
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
-            - name: Install dependencies
-              run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-            # Windows
-            - name: Build Windows
-              run: flutter build windows
-            - name: Create Windows directory
-              run: mkdir -p finished_program/windows
-            - name: Copy Windows build
-              run: cp -r build/windows/runner/Release/* finished_program/windows/
+      # Windows
+      - name: Build Windows
+        run: flutter build windows
+      - name: Create Windows directory
+        run: mkdir -p finished_program/windows
+      - name: Copy Windows build
+        run: cp -r build/windows/runner/Release/* finished_program/windows/
 
-            # Артефакты
-            - name: Upload artifacts (Windows)
-              uses: actions/upload-artifact@v3
-              with:
-                  name: finished_program_windows_${{ github.sha }}
-                  path: finished_program/
+      # Артефакты (обновлено до v4)
+      - name: Upload artifacts (Windows)
+        uses: actions/upload-artifact@v4  # Исправлено здесь
+        with:
+          name: finished_program_windows_${{ github.sha }}
+          path: finished_program/
 
-    build_macos_ios:
-        name: Build macOS и iOS
-        runs-on: macos-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+  build_macos_ios:
+    name: Build macOS и iOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Обновлено до v4
 
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                  channel: stable
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
-            - name: Install dependencies
-              run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-            # iOS
-            - name: Build iOS (no codesign)
-              run: flutter build ios --release --no-codesign
-            - name: Create iOS directory
-              run: mkdir -p finished_program/ios
-            - name: Copy iOS build
-              run: cp -r build/ios/Release-iphoneos/*.app finished_program/ios/
+      # iOS
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+      - name: Create iOS directory
+        run: mkdir -p finished_program/ios
+      - name: Copy iOS build
+        run: cp -r build/ios/Release-iphoneos/*.app finished_program/ios/
 
-            # macOS
-            - name: Build macOS
-              run: flutter build macos
-            - name: Create macOS directory
-              run: mkdir -p finished_program/macos
-            - name: Copy macOS build
-              run: cp -r build/macos/Build/Products/Release/*.app finished_program/macos/
+      # macOS
+      - name: Build macOS
+        run: flutter build macos
+      - name: Create macOS directory
+        run: mkdir -p finished_program/macos
+      - name: Copy macOS build
+        run: cp -r build/macos/Build/Products/Release/*.app finished_program/macos/
 
-            # Артефакты
-            - name: Upload artifacts (macOS/iOS)
-              uses: actions/upload-artifact@v3
-              with:
-                  name: finished_program_macos_ios_${{ github.sha }}
-                  path: finished_program/
+      # Артефакты (обновлено до v4)
+      - name: Upload artifacts (macOS/iOS)
+        uses: actions/upload-artifact@v4  # Исправлено здесь
+        with:
+          name: finished_program_macos_ios_${{ github.sha }}
+          path: finished_program/

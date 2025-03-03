@@ -26,7 +26,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Кэширование для ускорения
       - name: Cache Flutter artifacts
         uses: actions/cache@v3
         with:
@@ -63,9 +62,9 @@ jobs:
           mkdir -p finished_program/android
           cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
 
-      # Артефакты вместо коммита в репозиторий
+      # Обновленная версия загрузки артефактов
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: finished_program
           path: finished_program/

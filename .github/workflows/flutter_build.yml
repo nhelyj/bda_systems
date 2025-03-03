@@ -30,7 +30,7 @@ jobs:
         run: mv build/app/outputs/flutter-apk/app-release.apk finished_program/android/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: finished_program/android/
@@ -59,7 +59,7 @@ jobs:
         run: mv build/ios/iphoneos finished_program/ios/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-build
           path: finished_program/ios/
@@ -88,7 +88,7 @@ jobs:
         run: mv build/web finished_program/web/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: finished_program/web/
@@ -117,7 +117,7 @@ jobs:
         run: mv build/windows/runner/Release finished_program/windows/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-exe
           path: finished_program/windows/
@@ -146,7 +146,7 @@ jobs:
         run: mv build/macos/Build/Products/Release finished_program/macos/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-app
           path: finished_program/macos/
@@ -175,7 +175,7 @@ jobs:
         run: mv build/linux/x64/release/bundle finished_program/linux/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-app
           path: finished_program/linux/

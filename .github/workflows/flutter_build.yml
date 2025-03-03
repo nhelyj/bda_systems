@@ -1,120 +1,72 @@
-name: Flutter Build All Platforms
+name: Flutter Build Pipeline
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build_linux_android_web:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          channel: stable
-          flutter-version: "3.22.0"
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Android
-      - name: Build Android APK
-        run: flutter build apk --release
-      - name: Prepare Android artifacts
-        run: |
-          mkdir -p finished_program/android
-          cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
-
-      # Web
-      - name: Build Web
-        run: flutter build web
-      - name: Prepare Web artifacts
-        run: |
-          mkdir -p finished_program/web
-          cp -r build/web/* finished_program/web/
-
-      # Linux
-      - name: Build Linux
-        run: flutter build linux
-      - name: Prepare Linux artifacts
-        run: |
-          mkdir -p finished_program/linux
-          cp -r build/linux/release/bundle/* finished_program/linux/
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: builds-ubuntu-${{ github.sha }}
-          path: finished_program/
-          retention-days: 1
-
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          flutter-version: "3.22.0"
+          channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
-      # Windows
+      # Кэширование для ускорения
+      - name: Cache Flutter artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+            ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+
+      # Сборка для Windows
       - name: Build Windows
-        run: flutter build windows
-      - name: Prepare Windows artifacts
         run: |
+          flutter build windows --release
           mkdir -p finished_program/windows
           cp -r build/windows/runner/Release/* finished_program/windows/
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: builds-windows-${{ github.sha }}
-          path: finished_program/
-          retention-days: 1
-
-  build_macos_ios:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: "3.22.0"
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      # iOS
-      - name: Build iOS
-        run: flutter build ios --release --no-codesign
-      - name: Prepare iOS artifacts
+      # Сборка для Linux
+      - name: Build Linux
         run: |
-          mkdir -p finished_program/ios
-          cp -r build/ios/Release-iphoneos/* finished_program/ios/
+          flutter build linux --release
+          mkdir -p finished_program/linux
+          cp -r build/linux/arm64/release/bundle/* finished_program/linux/
 
-      # macOS
-      - name: Build macOS
-        run: flutter build macos
-      - name: Prepare macOS artifacts
+      # Сборка Web
+      - name: Build Web
         run: |
-          mkdir -p finished_program/macos
-          cp -r build/macos/Build/Products/Release/* finished_program/macos/
+          flutter build web --release
+          mkdir -p finished_program/web
+          cp -r build/web/* finished_program/web/
 
+      # Сборка Android (без подписи)
+      - name: Build Android
+        run: |
+          flutter build apk --release
+          mkdir -p finished_program/android
+          cp build/app/outputs/flutter-apk/app-release.apk finished_program/android/
+
+      # Артефакты вместо коммита в репозиторий
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: builds-macos-${{ github.sha }}
+          name: finished_program
           path: finished_program/
-          retention-days: 1
+          retention-days: 5
